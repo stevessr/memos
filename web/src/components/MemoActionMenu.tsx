@@ -9,12 +9,12 @@ import { useMemoStore } from "@/store/v1";
 import { RowStatus } from "@/types/proto/api/v1/common";
 import { Memo } from "@/types/proto/api/v1/memo_service";
 import { useTranslate } from "@/utils/i18n";
-import showMemoEditorDialog from "./MemoEditor/MemoEditorDialog";
 
 interface Props {
   memo: Memo;
   className?: string;
   hiddenActions?: ("edit" | "archive" | "delete" | "share" | "pin")[];
+  onEdit?: () => void;
 }
 
 const MemoActionMenu = (props: Props) => {
@@ -50,10 +50,10 @@ const MemoActionMenu = (props: Props) => {
   };
 
   const handleEditMemoClick = () => {
-    showMemoEditorDialog({
-      memoName: memo.name,
-      cacheKey: `${memo.name}-${memo.updateTime}`,
-    });
+    if (props.onEdit) {
+      props.onEdit();
+      return;
+    }
   };
 
   const handleToggleMemoStatusClick = async () => {
@@ -118,7 +118,7 @@ const MemoActionMenu = (props: Props) => {
             {memo.pinned ? t("common.unpin") : t("common.pin")}
           </MenuItem>
         )}
-        {!hiddenActions?.includes("edit") && (
+        {!hiddenActions?.includes("edit") && props.onEdit && (
           <MenuItem onClick={handleEditMemoClick}>
             <Icon.Edit3 className="w-4 h-auto" />
             {t("common.edit")}

@@ -80,11 +80,13 @@ type FindMemo struct {
 	Offset           *int
 	OrderByUpdatedTs bool
 	OrderByPinned    bool
+
+	OrderByTimeAsc bool
 }
 
 type FindMemoPayload struct {
 	Raw                *string
-	Tag                *string
+	TagSearch          []string
 	HasLink            bool
 	HasTaskList        bool
 	HasCode            bool

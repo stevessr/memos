@@ -1,7 +1,7 @@
 import { Button, Input, Switch } from "@mui/joy";
 import { isEqual } from "lodash-es";
 import { useState } from "react";
-import { WorkspaceSettingPrefix, useWorkspaceSettingStore } from "@/store/v1";
+import { workspaceSettingNamePrefix, useWorkspaceSettingStore } from "@/store/v1";
 import { WorkspaceMemoRelatedSetting } from "@/types/proto/api/v1/workspace_setting_service";
 import { WorkspaceSettingKey } from "@/types/proto/store/workspace_setting";
 import { useTranslate } from "@/utils/i18n";
@@ -24,7 +24,7 @@ const MemoRelatedSettings = () => {
 
   const updateSetting = async () => {
     await workspaceSettingStore.setWorkspaceSetting({
-      name: `${WorkspaceSettingPrefix}${WorkspaceSettingKey.MEMO_RELATED}`,
+      name: `${workspaceSettingNamePrefix}${WorkspaceSettingKey.MEMO_RELATED}`,
       memoRelatedSetting,
     });
   };
@@ -35,8 +35,8 @@ const MemoRelatedSettings = () => {
       <div className="w-full flex flex-row justify-between items-center">
         <span>{t("setting.system-section.disable-public-memos")}</span>
         <Switch
-          checked={memoRelatedSetting.disallowPublicVisible}
-          onChange={(event) => updatePartialSetting({ disallowPublicVisible: event.target.checked })}
+          checked={memoRelatedSetting.disallowPublicVisibility}
+          onChange={(event) => updatePartialSetting({ disallowPublicVisibility: event.target.checked })}
         />
       </div>
       <div className="w-full flex flex-row justify-between items-center">
@@ -51,6 +51,13 @@ const MemoRelatedSettings = () => {
         <Switch
           checked={memoRelatedSetting.enableAutoCompact}
           onChange={(event) => updatePartialSetting({ enableAutoCompact: event.target.checked })}
+        />
+      </div>
+      <div className="w-full flex flex-row justify-between items-center">
+        <span>Enable link preview</span>
+        <Switch
+          checked={memoRelatedSetting.enableLinkPreview}
+          onChange={(event) => updatePartialSetting({ enableLinkPreview: event.target.checked })}
         />
       </div>
       <div className="w-full flex flex-row justify-between items-center">

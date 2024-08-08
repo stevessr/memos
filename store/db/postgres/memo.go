@@ -81,8 +81,10 @@ func (d *DB) ListMemos(ctx context.Context, find *store.FindMemo) ([]*store.Memo
 		if v.Raw != nil {
 			where, args = append(where, "memo.payload = "+placeholder(len(args)+1)), append(args, *v.Raw)
 		}
-		if v.Tag != nil {
-			where, args = append(where, "memo.payload->'property'->'tags' @> "+placeholder(len(args)+1)), append(args, fmt.Sprintf(`["%s"]`, *v.Tag))
+		if len(v.TagSearch) != 0 {
+			for _, tag := range v.TagSearch {
+				where, args = append(where, "memo.payload->'property'->'tags' @> "+placeholder(len(args)+1)), append(args, fmt.Sprintf(`["%s"]`, tag))
+			}
 		}
 		if v.HasLink {
 			where = append(where, "(memo.payload->'property'->>'hasLink')::BOOLEAN IS TRUE")
@@ -105,12 +107,16 @@ func (d *DB) ListMemos(ctx context.Context, find *store.FindMemo) ([]*store.Memo
 	if find.OrderByPinned {
 		orders = append(orders, "pinned DESC")
 	}
-	if find.OrderByUpdatedTs {
-		orders = append(orders, "updated_ts DESC")
-	} else {
-		orders = append(orders, "created_ts DESC")
+	order := "DESC"
+	if find.OrderByTimeAsc {
+		order = "ASC"
 	}
-	orders = append(orders, "id DESC")
+	if find.OrderByUpdatedTs {
+		orders = append(orders, "updated_ts "+order)
+	} else {
+		orders = append(orders, "created_ts "+order)
+	}
+	orders = append(orders, "id "+order)
 	if find.Random {
 		orders = append(orders, "RAND()")
 	}

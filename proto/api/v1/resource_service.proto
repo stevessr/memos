@@ -24,14 +24,15 @@ service ResourceService {
   rpc ListResources(ListResourcesRequest) returns (ListResourcesResponse) {
     option (google.api.http) = {get: "/api/v1/resources"};
   }
-  // SearchResources searches memos.
-  rpc SearchResources(SearchResourcesRequest) returns (SearchResourcesResponse) {
-    option (google.api.http) = {get: "/api/v1/resources:search"};
-  }
   // GetResource returns a resource by name.
   rpc GetResource(GetResourceRequest) returns (Resource) {
     option (google.api.http) = {get: "/api/v1/{name=resources/*}"};
     option (google.api.method_signature) = "name";
+  }
+  // GetResourceByUid returns a resource by uid.
+  rpc GetResourceByUid(GetResourceByUidRequest) returns (Resource) {
+    option (google.api.http) = {get: "/api/v1/resources:by-uid/{uid}"};
+    option (google.api.method_signature) = "uid";
   }
   // GetResourceBinary returns a resource binary by name.
   rpc GetResourceBinary(GetResourceBinaryRequest) returns (google.api.HttpBody) {
@@ -89,19 +90,16 @@ message ListResourcesResponse {
   repeated Resource resources = 1;
 }
 
-message SearchResourcesRequest {
-  string filter = 1;
-}
-
-message SearchResourcesResponse {
-  repeated Resource resources = 1;
-}
-
 message GetResourceRequest {
   // The name of the resource.
   // Format: resources/{id}
   // id is the system generated unique identifier.
   string name = 1;
+}
+
+message GetResourceByUidRequest {
+  // The uid of the resource.
+  string uid = 1;
 }
 
 message GetResourceBinaryRequest {

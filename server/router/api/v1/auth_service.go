@@ -167,7 +167,11 @@ func (s *APIV1Service) doSignIn(ctx context.Context, user *store.User, expireTim
 }
 
 func (s *APIV1Service) SignUp(ctx context.Context, request *v1pb.SignUpRequest) (*v1pb.User, error) {
-	if !s.Profile.Public {
+	workspaceProfile, err := s.GetWorkspaceProfile(ctx, &v1pb.GetWorkspaceProfileRequest{})
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, fmt.Sprintf("failed to get workspace profile, err: %s", err))
+	}
+	if !workspaceProfile.Public {
 		return nil, status.Errorf(codes.PermissionDenied, "sign up is not allowed")
 	}
 
@@ -214,11 +218,14 @@ func (s *APIV1Service) SignOut(ctx context.Context, _ *v1pb.SignOutRequest) (*em
 	accessToken, ok := ctx.Value(accessTokenContextKey).(string)
 	// Try to delete the access token from the store.
 	if ok {
-		_, err := s.DeleteUserAccessToken(ctx, &v1pb.DeleteUserAccessTokenRequest{
-			AccessToken: accessToken,
-		})
-		if err != nil {
-			slog.Error("failed to delete access token", slog.Any("err", err))
+		user, _ := s.GetCurrentUser(ctx)
+		if user != nil {
+			if _, err := s.DeleteUserAccessToken(ctx, &v1pb.DeleteUserAccessTokenRequest{
+				Name:        fmt.Sprintf("%s%d", UserNamePrefix, user.ID),
+				AccessToken: accessToken,
+			}); err != nil {
+				slog.Error("failed to delete access token", "error", err)
+			}
 		}
 	}
 
