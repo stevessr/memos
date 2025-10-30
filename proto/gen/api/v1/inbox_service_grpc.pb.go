@@ -20,21 +20,36 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	InboxService_ListInboxes_FullMethodName = "/memos.api.v1.InboxService/ListInboxes"
-	InboxService_UpdateInbox_FullMethodName = "/memos.api.v1.InboxService/UpdateInbox"
-	InboxService_DeleteInbox_FullMethodName = "/memos.api.v1.InboxService/DeleteInbox"
+	InboxService_ListInboxes_FullMethodName          = "/memos.api.v1.InboxService/ListInboxes"
+	InboxService_GetInbox_FullMethodName             = "/memos.api.v1.InboxService/GetInbox"
+	InboxService_UpdateInbox_FullMethodName          = "/memos.api.v1.InboxService/UpdateInbox"
+	InboxService_DeleteInbox_FullMethodName          = "/memos.api.v1.InboxService/DeleteInbox"
+	InboxService_MarkInboxAsRead_FullMethodName      = "/memos.api.v1.InboxService/MarkInboxAsRead"
+	InboxService_MarkAllInboxesAsRead_FullMethodName = "/memos.api.v1.InboxService/MarkAllInboxesAsRead"
 )
 
 // InboxServiceClient is the client API for InboxService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type InboxServiceClient interface {
-	// ListInboxes lists inboxes for a user.
+	// ListInboxes lists inbox notifications for a user.
+	// Similar to GitHub's "List notifications for the authenticated user"
 	ListInboxes(ctx context.Context, in *ListInboxesRequest, opts ...grpc.CallOption) (*ListInboxesResponse, error)
-	// UpdateInbox updates an inbox.
+	// GetInbox gets a single inbox notification.
+	// Similar to GitHub's "Get a thread"
+	GetInbox(ctx context.Context, in *GetInboxRequest, opts ...grpc.CallOption) (*Inbox, error)
+	// UpdateInbox updates an inbox notification (typically for marking as read/done).
+	// Similar to GitHub's "Mark a thread as read" or "Mark a thread as done"
 	UpdateInbox(ctx context.Context, in *UpdateInboxRequest, opts ...grpc.CallOption) (*Inbox, error)
-	// DeleteInbox deletes an inbox.
+	// DeleteInbox deletes an inbox notification.
+	// Similar to GitHub's "Delete a thread subscription"
 	DeleteInbox(ctx context.Context, in *DeleteInboxRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// MarkInboxAsRead marks an inbox notification as read.
+	// Similar to GitHub's "Mark a thread as read"
+	MarkInboxAsRead(ctx context.Context, in *MarkInboxAsReadRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// MarkAllInboxesAsRead marks all inbox notifications as read.
+	// Similar to GitHub's "Mark notifications as read"
+	MarkAllInboxesAsRead(ctx context.Context, in *MarkAllInboxesAsReadRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type inboxServiceClient struct {
@@ -49,6 +64,16 @@ func (c *inboxServiceClient) ListInboxes(ctx context.Context, in *ListInboxesReq
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListInboxesResponse)
 	err := c.cc.Invoke(ctx, InboxService_ListInboxes_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inboxServiceClient) GetInbox(ctx context.Context, in *GetInboxRequest, opts ...grpc.CallOption) (*Inbox, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Inbox)
+	err := c.cc.Invoke(ctx, InboxService_GetInbox_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -75,16 +100,48 @@ func (c *inboxServiceClient) DeleteInbox(ctx context.Context, in *DeleteInboxReq
 	return out, nil
 }
 
+func (c *inboxServiceClient) MarkInboxAsRead(ctx context.Context, in *MarkInboxAsReadRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, InboxService_MarkInboxAsRead_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *inboxServiceClient) MarkAllInboxesAsRead(ctx context.Context, in *MarkAllInboxesAsReadRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, InboxService_MarkAllInboxesAsRead_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // InboxServiceServer is the server API for InboxService service.
 // All implementations must embed UnimplementedInboxServiceServer
 // for forward compatibility.
 type InboxServiceServer interface {
-	// ListInboxes lists inboxes for a user.
+	// ListInboxes lists inbox notifications for a user.
+	// Similar to GitHub's "List notifications for the authenticated user"
 	ListInboxes(context.Context, *ListInboxesRequest) (*ListInboxesResponse, error)
-	// UpdateInbox updates an inbox.
+	// GetInbox gets a single inbox notification.
+	// Similar to GitHub's "Get a thread"
+	GetInbox(context.Context, *GetInboxRequest) (*Inbox, error)
+	// UpdateInbox updates an inbox notification (typically for marking as read/done).
+	// Similar to GitHub's "Mark a thread as read" or "Mark a thread as done"
 	UpdateInbox(context.Context, *UpdateInboxRequest) (*Inbox, error)
-	// DeleteInbox deletes an inbox.
+	// DeleteInbox deletes an inbox notification.
+	// Similar to GitHub's "Delete a thread subscription"
 	DeleteInbox(context.Context, *DeleteInboxRequest) (*emptypb.Empty, error)
+	// MarkInboxAsRead marks an inbox notification as read.
+	// Similar to GitHub's "Mark a thread as read"
+	MarkInboxAsRead(context.Context, *MarkInboxAsReadRequest) (*emptypb.Empty, error)
+	// MarkAllInboxesAsRead marks all inbox notifications as read.
+	// Similar to GitHub's "Mark notifications as read"
+	MarkAllInboxesAsRead(context.Context, *MarkAllInboxesAsReadRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedInboxServiceServer()
 }
 
@@ -98,11 +155,20 @@ type UnimplementedInboxServiceServer struct{}
 func (UnimplementedInboxServiceServer) ListInboxes(context.Context, *ListInboxesRequest) (*ListInboxesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListInboxes not implemented")
 }
+func (UnimplementedInboxServiceServer) GetInbox(context.Context, *GetInboxRequest) (*Inbox, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetInbox not implemented")
+}
 func (UnimplementedInboxServiceServer) UpdateInbox(context.Context, *UpdateInboxRequest) (*Inbox, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateInbox not implemented")
 }
 func (UnimplementedInboxServiceServer) DeleteInbox(context.Context, *DeleteInboxRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteInbox not implemented")
+}
+func (UnimplementedInboxServiceServer) MarkInboxAsRead(context.Context, *MarkInboxAsReadRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method MarkInboxAsRead not implemented")
+}
+func (UnimplementedInboxServiceServer) MarkAllInboxesAsRead(context.Context, *MarkAllInboxesAsReadRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method MarkAllInboxesAsRead not implemented")
 }
 func (UnimplementedInboxServiceServer) mustEmbedUnimplementedInboxServiceServer() {}
 func (UnimplementedInboxServiceServer) testEmbeddedByValue()                      {}
@@ -143,6 +209,24 @@ func _InboxService_ListInboxes_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _InboxService_GetInbox_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetInboxRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InboxServiceServer).GetInbox(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InboxService_GetInbox_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InboxServiceServer).GetInbox(ctx, req.(*GetInboxRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _InboxService_UpdateInbox_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateInboxRequest)
 	if err := dec(in); err != nil {
@@ -179,6 +263,42 @@ func _InboxService_DeleteInbox_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _InboxService_MarkInboxAsRead_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MarkInboxAsReadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InboxServiceServer).MarkInboxAsRead(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InboxService_MarkInboxAsRead_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InboxServiceServer).MarkInboxAsRead(ctx, req.(*MarkInboxAsReadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _InboxService_MarkAllInboxesAsRead_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MarkAllInboxesAsReadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InboxServiceServer).MarkAllInboxesAsRead(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: InboxService_MarkAllInboxesAsRead_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InboxServiceServer).MarkAllInboxesAsRead(ctx, req.(*MarkAllInboxesAsReadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // InboxService_ServiceDesc is the grpc.ServiceDesc for InboxService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -191,12 +311,24 @@ var InboxService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _InboxService_ListInboxes_Handler,
 		},
 		{
+			MethodName: "GetInbox",
+			Handler:    _InboxService_GetInbox_Handler,
+		},
+		{
 			MethodName: "UpdateInbox",
 			Handler:    _InboxService_UpdateInbox_Handler,
 		},
 		{
 			MethodName: "DeleteInbox",
 			Handler:    _InboxService_DeleteInbox_Handler,
+		},
+		{
+			MethodName: "MarkInboxAsRead",
+			Handler:    _InboxService_MarkInboxAsRead_Handler,
+		},
+		{
+			MethodName: "MarkAllInboxesAsRead",
+			Handler:    _InboxService_MarkAllInboxesAsRead_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

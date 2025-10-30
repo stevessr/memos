@@ -443,10 +443,39 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/Status'
     /api/v1/inboxes/{inboxe}:
+        get:
+            tags:
+                - InboxService
+            description: |-
+                GetInbox gets a single inbox notification.
+                 Similar to GitHub's "Get a thread"
+            operationId: InboxService_GetInbox
+            parameters:
+                - name: inboxe
+                  in: path
+                  description: The inboxe id.
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Inbox'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
         delete:
             tags:
                 - InboxService
-            description: DeleteInbox deletes an inbox.
+            description: |-
+                DeleteInbox deletes an inbox notification.
+                 Similar to GitHub's "Delete a thread subscription"
             operationId: InboxService_DeleteInbox
             parameters:
                 - name: inboxe
@@ -468,7 +497,9 @@ paths:
         patch:
             tags:
                 - InboxService
-            description: UpdateInbox updates an inbox.
+            description: |-
+                UpdateInbox updates an inbox notification (typically for marking as read/done).
+                 Similar to GitHub's "Mark a thread as read" or "Mark a thread as done"
             operationId: InboxService_UpdateInbox
             parameters:
                 - name: inboxe
@@ -479,15 +510,12 @@ paths:
                     type: string
                 - name: updateMask
                   in: query
-                  description: Required. The list of fields to update.
+                  description: |-
+                    Required. The list of fields to update.
+                     Supported fields: unread, last_read_at
                   schema:
                     type: string
                     format: field-mask
-                - name: allowMissing
-                  in: query
-                  description: Optional. If set to true, allows updating missing fields.
-                  schema:
-                    type: boolean
             requestBody:
                 content:
                     application/json:
@@ -501,6 +529,37 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Inbox'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/v1/inboxes/{inboxe}:markAsRead:
+        post:
+            tags:
+                - InboxService
+            description: |-
+                MarkInboxAsRead marks an inbox notification as read.
+                 Similar to GitHub's "Mark a thread as read"
+            operationId: InboxService_MarkInboxAsRead
+            parameters:
+                - name: inboxe
+                  in: path
+                  description: The inboxe id.
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/MarkInboxAsReadRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
                 default:
                     description: Default error response
                     content:
@@ -1333,7 +1392,9 @@ paths:
         get:
             tags:
                 - InboxService
-            description: ListInboxes lists inboxes for a user.
+            description: |-
+                ListInboxes lists inbox notifications for a user.
+                 Similar to GitHub's "List notifications for the authenticated user"
             operationId: InboxService_ListInboxes
             parameters:
                 - name: user
@@ -1342,13 +1403,20 @@ paths:
                   required: true
                   schema:
                     type: string
+                - name: unreadOnly
+                  in: query
+                  description: |-
+                    Optional. If true, show only unread notifications.
+                     Similar to GitHub's "all" parameter (default is unread only)
+                  schema:
+                    type: boolean
                 - name: pageSize
                   in: query
                   description: |-
                     Optional. The maximum number of inboxes to return.
                      The service may return fewer than this value.
                      If unspecified, at most 50 inboxes will be returned.
-                     The maximum value is 1000; values above 1000 will be coerced to 1000.
+                     The maximum value is 100; values above 100 will be coerced to 100.
                   schema:
                     type: integer
                     format: int32
@@ -1359,22 +1427,30 @@ paths:
                      Provide this to retrieve the subsequent page.
                   schema:
                     type: string
-                - name: filter
+                - name: reason
                   in: query
                   description: |-
-                    Optional. Filter to apply to the list results.
-                     Example: "status=UNREAD" or "type=MEMO_COMMENT"
-                     Supported operators: =, !=
-                     Supported fields: status, type, sender, create_time
+                    Optional. Filter notifications by reason.
+                     Similar to GitHub's filtering by reason
+                     Examples: "comment", "mention", "version_update"
                   schema:
                     type: string
-                - name: orderBy
+                - name: since
                   in: query
                   description: |-
-                    Optional. The order to sort results by.
-                     Example: "create_time desc" or "status asc"
+                    Optional. Only show notifications updated after the given time.
+                     Similar to GitHub's "since" parameter
                   schema:
                     type: string
+                    format: date-time
+                - name: before
+                  in: query
+                  description: |-
+                    Optional. Only show notifications updated before the given time.
+                     Similar to GitHub's "before" parameter
+                  schema:
+                    type: string
+                    format: date-time
             responses:
                 "200":
                     description: OK
@@ -1382,6 +1458,37 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListInboxesResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /api/v1/users/{user}/inboxes:markAllAsRead:
+        post:
+            tags:
+                - InboxService
+            description: |-
+                MarkAllInboxesAsRead marks all inbox notifications as read.
+                 Similar to GitHub's "Mark notifications as read"
+            operationId: InboxService_MarkAllInboxesAsRead
+            parameters:
+                - name: user
+                  in: path
+                  description: The user id.
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/MarkAllInboxesAsReadRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content: {}
                 default:
                     description: Default error response
                     content:
@@ -2268,9 +2375,10 @@ components:
             type: object
             properties:
                 name:
+                    readOnly: true
                     type: string
                     description: |-
-                        The resource name of the inbox.
+                        The resource name of the inbox notification.
                          Format: inboxes/{inbox}
                 sender:
                     readOnly: true
@@ -2278,38 +2386,85 @@ components:
                     description: |-
                         The sender of the inbox notification.
                          Format: users/{user}
+                         Similar to GitHub's notification actor
                 receiver:
                     readOnly: true
                     type: string
                     description: |-
                         The receiver of the inbox notification.
                          Format: users/{user}
-                status:
-                    enum:
-                        - STATUS_UNSPECIFIED
-                        - UNREAD
-                        - ARCHIVED
-                    type: string
-                    description: The status of the inbox notification.
-                    format: enum
+                unread:
+                    readOnly: true
+                    type: boolean
+                    description: |-
+                        Whether the notification is unread.
+                         Similar to GitHub's "unread" field
                 createTime:
                     readOnly: true
                     type: string
                     description: Output only. The creation timestamp.
                     format: date-time
-                type:
+                updateTime:
                     readOnly: true
-                    enum:
-                        - TYPE_UNSPECIFIED
-                        - MEMO_COMMENT
-                        - VERSION_UPDATE
                     type: string
-                    description: The type of the inbox notification.
-                    format: enum
-                activityId:
-                    type: integer
-                    description: Optional. The activity ID associated with this inbox notification.
-                    format: int32
+                    description: |-
+                        Output only. The last update timestamp.
+                         Similar to GitHub's "updated_at"
+                    format: date-time
+                lastReadAt:
+                    readOnly: true
+                    type: string
+                    description: |-
+                        Optional. When the notification was last read.
+                         Similar to GitHub's "last_read_at"
+                    format: date-time
+                reason:
+                    readOnly: true
+                    type: string
+                    description: |-
+                        The reason for receiving this notification.
+                         Similar to GitHub's "reason" field
+                         Examples: "comment", "mention", "version_update", "assign", "review_requested"
+                subject:
+                    readOnly: true
+                    allOf:
+                        - $ref: '#/components/schemas/Inbox_Subject'
+                    description: |-
+                        The subject of the notification.
+                         Similar to GitHub's "subject" object
+                activity:
+                    readOnly: true
+                    type: string
+                    description: |-
+                        The activity associated with this inbox notification.
+                         Format: activities/{activity}
+        Inbox_Subject:
+            type: object
+            properties:
+                title:
+                    type: string
+                    description: |-
+                        The title of the subject.
+                         Similar to GitHub's "subject.title"
+                type:
+                    type: string
+                    description: |-
+                        The type of subject.
+                         Examples: "Memo", "Comment", "Version"
+                         Similar to GitHub's "subject.type" (Issue, PullRequest, etc.)
+                url:
+                    type: string
+                    description: |-
+                        The URL to the subject.
+                         Similar to GitHub's "subject.url"
+                latestCommentUrl:
+                    type: string
+                    description: |-
+                        Optional. The URL to the latest comment.
+                         Similar to GitHub's "subject.latest_comment_url"
+            description: |-
+                Subject of the notification.
+                 Similar to GitHub's notification subject
         ListActivitiesResponse:
             type: object
             properties:
@@ -2364,16 +2519,12 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Inbox'
-                    description: The list of inboxes.
+                    description: The list of inbox notifications.
                 nextPageToken:
                     type: string
                     description: |-
                         A token that can be sent as `page_token` to retrieve the next page.
                          If this field is omitted, there are no subsequent pages.
-                totalSize:
-                    type: integer
-                    description: The total count of inboxes (may be approximate).
-                    format: int32
         ListMemoAttachmentsResponse:
             type: object
             properties:
@@ -2527,6 +2678,39 @@ components:
                     type: number
                     description: The longitude of the location.
                     format: double
+        MarkAllInboxesAsReadRequest:
+            required:
+                - parent
+            type: object
+            properties:
+                parent:
+                    type: string
+                    description: |-
+                        Required. The parent resource whose inboxes will be marked as read.
+                         Format: users/{user}
+                readAt:
+                    type: string
+                    description: |-
+                        Optional. The timestamp to mark as read at.
+                         If not specified, uses the current time.
+                         Similar to GitHub's "last_read_at" parameter
+                    format: date-time
+        MarkInboxAsReadRequest:
+            required:
+                - name
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: |-
+                        Required. The resource name of the inbox notification.
+                         Format: inboxes/{inbox}
+                readAt:
+                    type: string
+                    description: |-
+                        Optional. The timestamp to mark as read at.
+                         If not specified, uses the current time.
+                    format: date-time
         Memo:
             required:
                 - state

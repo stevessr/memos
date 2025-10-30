@@ -25,131 +25,39 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Status enumeration for inbox notifications.
-type Inbox_Status int32
-
-const (
-	// Unspecified status.
-	Inbox_STATUS_UNSPECIFIED Inbox_Status = 0
-	// The notification is unread.
-	Inbox_UNREAD Inbox_Status = 1
-	// The notification is archived.
-	Inbox_ARCHIVED Inbox_Status = 2
-)
-
-// Enum value maps for Inbox_Status.
-var (
-	Inbox_Status_name = map[int32]string{
-		0: "STATUS_UNSPECIFIED",
-		1: "UNREAD",
-		2: "ARCHIVED",
-	}
-	Inbox_Status_value = map[string]int32{
-		"STATUS_UNSPECIFIED": 0,
-		"UNREAD":             1,
-		"ARCHIVED":           2,
-	}
-)
-
-func (x Inbox_Status) Enum() *Inbox_Status {
-	p := new(Inbox_Status)
-	*p = x
-	return p
-}
-
-func (x Inbox_Status) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (Inbox_Status) Descriptor() protoreflect.EnumDescriptor {
-	return file_api_v1_inbox_service_proto_enumTypes[0].Descriptor()
-}
-
-func (Inbox_Status) Type() protoreflect.EnumType {
-	return &file_api_v1_inbox_service_proto_enumTypes[0]
-}
-
-func (x Inbox_Status) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use Inbox_Status.Descriptor instead.
-func (Inbox_Status) EnumDescriptor() ([]byte, []int) {
-	return file_api_v1_inbox_service_proto_rawDescGZIP(), []int{0, 0}
-}
-
-// Type enumeration for inbox notifications.
-type Inbox_Type int32
-
-const (
-	// Unspecified type.
-	Inbox_TYPE_UNSPECIFIED Inbox_Type = 0
-	// Memo comment notification.
-	Inbox_MEMO_COMMENT Inbox_Type = 1
-	// Version update notification.
-	Inbox_VERSION_UPDATE Inbox_Type = 2
-)
-
-// Enum value maps for Inbox_Type.
-var (
-	Inbox_Type_name = map[int32]string{
-		0: "TYPE_UNSPECIFIED",
-		1: "MEMO_COMMENT",
-		2: "VERSION_UPDATE",
-	}
-	Inbox_Type_value = map[string]int32{
-		"TYPE_UNSPECIFIED": 0,
-		"MEMO_COMMENT":     1,
-		"VERSION_UPDATE":   2,
-	}
-)
-
-func (x Inbox_Type) Enum() *Inbox_Type {
-	p := new(Inbox_Type)
-	*p = x
-	return p
-}
-
-func (x Inbox_Type) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (Inbox_Type) Descriptor() protoreflect.EnumDescriptor {
-	return file_api_v1_inbox_service_proto_enumTypes[1].Descriptor()
-}
-
-func (Inbox_Type) Type() protoreflect.EnumType {
-	return &file_api_v1_inbox_service_proto_enumTypes[1]
-}
-
-func (x Inbox_Type) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use Inbox_Type.Descriptor instead.
-func (Inbox_Type) EnumDescriptor() ([]byte, []int) {
-	return file_api_v1_inbox_service_proto_rawDescGZIP(), []int{0, 1}
-}
-
 type Inbox struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// The resource name of the inbox.
+	// The resource name of the inbox notification.
 	// Format: inboxes/{inbox}
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// The sender of the inbox notification.
 	// Format: users/{user}
+	// Similar to GitHub's notification actor
 	Sender string `protobuf:"bytes,2,opt,name=sender,proto3" json:"sender,omitempty"`
 	// The receiver of the inbox notification.
 	// Format: users/{user}
 	Receiver string `protobuf:"bytes,3,opt,name=receiver,proto3" json:"receiver,omitempty"`
-	// The status of the inbox notification.
-	Status Inbox_Status `protobuf:"varint,4,opt,name=status,proto3,enum=memos.api.v1.Inbox_Status" json:"status,omitempty"`
+	// Whether the notification is unread.
+	// Similar to GitHub's "unread" field
+	Unread bool `protobuf:"varint,4,opt,name=unread,proto3" json:"unread,omitempty"`
 	// Output only. The creation timestamp.
 	CreateTime *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=create_time,json=createTime,proto3" json:"create_time,omitempty"`
-	// The type of the inbox notification.
-	Type Inbox_Type `protobuf:"varint,6,opt,name=type,proto3,enum=memos.api.v1.Inbox_Type" json:"type,omitempty"`
-	// Optional. The activity ID associated with this inbox notification.
-	ActivityId    *int32 `protobuf:"varint,7,opt,name=activity_id,json=activityId,proto3,oneof" json:"activity_id,omitempty"`
+	// Output only. The last update timestamp.
+	// Similar to GitHub's "updated_at"
+	UpdateTime *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=update_time,json=updateTime,proto3" json:"update_time,omitempty"`
+	// Optional. When the notification was last read.
+	// Similar to GitHub's "last_read_at"
+	LastReadAt *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=last_read_at,json=lastReadAt,proto3,oneof" json:"last_read_at,omitempty"`
+	// The reason for receiving this notification.
+	// Similar to GitHub's "reason" field
+	// Examples: "comment", "mention", "version_update", "assign", "review_requested"
+	Reason string `protobuf:"bytes,8,opt,name=reason,proto3" json:"reason,omitempty"`
+	// The subject of the notification.
+	// Similar to GitHub's "subject" object
+	Subject *Inbox_Subject `protobuf:"bytes,9,opt,name=subject,proto3" json:"subject,omitempty"`
+	// The activity associated with this inbox notification.
+	// Format: activities/{activity}
+	Activity      string `protobuf:"bytes,10,opt,name=activity,proto3" json:"activity,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -205,11 +113,11 @@ func (x *Inbox) GetReceiver() string {
 	return ""
 }
 
-func (x *Inbox) GetStatus() Inbox_Status {
+func (x *Inbox) GetUnread() bool {
 	if x != nil {
-		return x.Status
+		return x.Unread
 	}
-	return Inbox_STATUS_UNSPECIFIED
+	return false
 }
 
 func (x *Inbox) GetCreateTime() *timestamppb.Timestamp {
@@ -219,18 +127,39 @@ func (x *Inbox) GetCreateTime() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *Inbox) GetType() Inbox_Type {
+func (x *Inbox) GetUpdateTime() *timestamppb.Timestamp {
 	if x != nil {
-		return x.Type
+		return x.UpdateTime
 	}
-	return Inbox_TYPE_UNSPECIFIED
+	return nil
 }
 
-func (x *Inbox) GetActivityId() int32 {
-	if x != nil && x.ActivityId != nil {
-		return *x.ActivityId
+func (x *Inbox) GetLastReadAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.LastReadAt
 	}
-	return 0
+	return nil
+}
+
+func (x *Inbox) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+func (x *Inbox) GetSubject() *Inbox_Subject {
+	if x != nil {
+		return x.Subject
+	}
+	return nil
+}
+
+func (x *Inbox) GetActivity() string {
+	if x != nil {
+		return x.Activity
+	}
+	return ""
 }
 
 type ListInboxesRequest struct {
@@ -238,22 +167,27 @@ type ListInboxesRequest struct {
 	// Required. The parent resource whose inboxes will be listed.
 	// Format: users/{user}
 	Parent string `protobuf:"bytes,1,opt,name=parent,proto3" json:"parent,omitempty"`
+	// Optional. If true, show only unread notifications.
+	// Similar to GitHub's "all" parameter (default is unread only)
+	UnreadOnly bool `protobuf:"varint,2,opt,name=unread_only,json=unreadOnly,proto3" json:"unread_only,omitempty"`
 	// Optional. The maximum number of inboxes to return.
 	// The service may return fewer than this value.
 	// If unspecified, at most 50 inboxes will be returned.
-	// The maximum value is 1000; values above 1000 will be coerced to 1000.
-	PageSize int32 `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	// The maximum value is 100; values above 100 will be coerced to 100.
+	PageSize int32 `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	// Optional. A page token, received from a previous `ListInboxes` call.
 	// Provide this to retrieve the subsequent page.
-	PageToken string `protobuf:"bytes,3,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
-	// Optional. Filter to apply to the list results.
-	// Example: "status=UNREAD" or "type=MEMO_COMMENT"
-	// Supported operators: =, !=
-	// Supported fields: status, type, sender, create_time
-	Filter string `protobuf:"bytes,4,opt,name=filter,proto3" json:"filter,omitempty"`
-	// Optional. The order to sort results by.
-	// Example: "create_time desc" or "status asc"
-	OrderBy       string `protobuf:"bytes,5,opt,name=order_by,json=orderBy,proto3" json:"order_by,omitempty"`
+	PageToken string `protobuf:"bytes,4,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	// Optional. Filter notifications by reason.
+	// Similar to GitHub's filtering by reason
+	// Examples: "comment", "mention", "version_update"
+	Reason string `protobuf:"bytes,5,opt,name=reason,proto3" json:"reason,omitempty"`
+	// Optional. Only show notifications updated after the given time.
+	// Similar to GitHub's "since" parameter
+	Since *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=since,proto3,oneof" json:"since,omitempty"`
+	// Optional. Only show notifications updated before the given time.
+	// Similar to GitHub's "before" parameter
+	Before        *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=before,proto3,oneof" json:"before,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -295,6 +229,13 @@ func (x *ListInboxesRequest) GetParent() string {
 	return ""
 }
 
+func (x *ListInboxesRequest) GetUnreadOnly() bool {
+	if x != nil {
+		return x.UnreadOnly
+	}
+	return false
+}
+
 func (x *ListInboxesRequest) GetPageSize() int32 {
 	if x != nil {
 		return x.PageSize
@@ -309,29 +250,34 @@ func (x *ListInboxesRequest) GetPageToken() string {
 	return ""
 }
 
-func (x *ListInboxesRequest) GetFilter() string {
+func (x *ListInboxesRequest) GetReason() string {
 	if x != nil {
-		return x.Filter
+		return x.Reason
 	}
 	return ""
 }
 
-func (x *ListInboxesRequest) GetOrderBy() string {
+func (x *ListInboxesRequest) GetSince() *timestamppb.Timestamp {
 	if x != nil {
-		return x.OrderBy
+		return x.Since
 	}
-	return ""
+	return nil
+}
+
+func (x *ListInboxesRequest) GetBefore() *timestamppb.Timestamp {
+	if x != nil {
+		return x.Before
+	}
+	return nil
 }
 
 type ListInboxesResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// The list of inboxes.
+	// The list of inbox notifications.
 	Inboxes []*Inbox `protobuf:"bytes,1,rep,name=inboxes,proto3" json:"inboxes,omitempty"`
 	// A token that can be sent as `page_token` to retrieve the next page.
 	// If this field is omitted, there are no subsequent pages.
 	NextPageToken string `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
-	// The total count of inboxes (may be approximate).
-	TotalSize     int32 `protobuf:"varint,3,opt,name=total_size,json=totalSize,proto3" json:"total_size,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -380,28 +326,66 @@ func (x *ListInboxesResponse) GetNextPageToken() string {
 	return ""
 }
 
-func (x *ListInboxesResponse) GetTotalSize() int32 {
+type GetInboxRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Required. The resource name of the inbox notification.
+	// Format: inboxes/{inbox}
+	Name          string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetInboxRequest) Reset() {
+	*x = GetInboxRequest{}
+	mi := &file_api_v1_inbox_service_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetInboxRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetInboxRequest) ProtoMessage() {}
+
+func (x *GetInboxRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_inbox_service_proto_msgTypes[3]
 	if x != nil {
-		return x.TotalSize
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
 	}
-	return 0
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetInboxRequest.ProtoReflect.Descriptor instead.
+func (*GetInboxRequest) Descriptor() ([]byte, []int) {
+	return file_api_v1_inbox_service_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *GetInboxRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
 }
 
 type UpdateInboxRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Required. The inbox to update.
+	// Required. The inbox notification to update.
 	Inbox *Inbox `protobuf:"bytes,1,opt,name=inbox,proto3" json:"inbox,omitempty"`
 	// Required. The list of fields to update.
-	UpdateMask *fieldmaskpb.FieldMask `protobuf:"bytes,2,opt,name=update_mask,json=updateMask,proto3" json:"update_mask,omitempty"`
-	// Optional. If set to true, allows updating missing fields.
-	AllowMissing  bool `protobuf:"varint,3,opt,name=allow_missing,json=allowMissing,proto3" json:"allow_missing,omitempty"`
+	// Supported fields: unread, last_read_at
+	UpdateMask    *fieldmaskpb.FieldMask `protobuf:"bytes,2,opt,name=update_mask,json=updateMask,proto3" json:"update_mask,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *UpdateInboxRequest) Reset() {
 	*x = UpdateInboxRequest{}
-	mi := &file_api_v1_inbox_service_proto_msgTypes[3]
+	mi := &file_api_v1_inbox_service_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -413,7 +397,7 @@ func (x *UpdateInboxRequest) String() string {
 func (*UpdateInboxRequest) ProtoMessage() {}
 
 func (x *UpdateInboxRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_inbox_service_proto_msgTypes[3]
+	mi := &file_api_v1_inbox_service_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -426,7 +410,7 @@ func (x *UpdateInboxRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateInboxRequest.ProtoReflect.Descriptor instead.
 func (*UpdateInboxRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_inbox_service_proto_rawDescGZIP(), []int{3}
+	return file_api_v1_inbox_service_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *UpdateInboxRequest) GetInbox() *Inbox {
@@ -443,16 +427,9 @@ func (x *UpdateInboxRequest) GetUpdateMask() *fieldmaskpb.FieldMask {
 	return nil
 }
 
-func (x *UpdateInboxRequest) GetAllowMissing() bool {
-	if x != nil {
-		return x.AllowMissing
-	}
-	return false
-}
-
 type DeleteInboxRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Required. The resource name of the inbox to delete.
+	// Required. The resource name of the inbox notification to delete.
 	// Format: inboxes/{inbox}
 	Name          string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -461,7 +438,7 @@ type DeleteInboxRequest struct {
 
 func (x *DeleteInboxRequest) Reset() {
 	*x = DeleteInboxRequest{}
-	mi := &file_api_v1_inbox_service_proto_msgTypes[4]
+	mi := &file_api_v1_inbox_service_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -473,7 +450,7 @@ func (x *DeleteInboxRequest) String() string {
 func (*DeleteInboxRequest) ProtoMessage() {}
 
 func (x *DeleteInboxRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_inbox_service_proto_msgTypes[4]
+	mi := &file_api_v1_inbox_service_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -486,7 +463,7 @@ func (x *DeleteInboxRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteInboxRequest.ProtoReflect.Descriptor instead.
 func (*DeleteInboxRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_inbox_service_proto_rawDescGZIP(), []int{4}
+	return file_api_v1_inbox_service_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *DeleteInboxRequest) GetName() string {
@@ -496,57 +473,274 @@ func (x *DeleteInboxRequest) GetName() string {
 	return ""
 }
 
+type MarkInboxAsReadRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Required. The resource name of the inbox notification.
+	// Format: inboxes/{inbox}
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// Optional. The timestamp to mark as read at.
+	// If not specified, uses the current time.
+	ReadAt        *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=read_at,json=readAt,proto3,oneof" json:"read_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MarkInboxAsReadRequest) Reset() {
+	*x = MarkInboxAsReadRequest{}
+	mi := &file_api_v1_inbox_service_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MarkInboxAsReadRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MarkInboxAsReadRequest) ProtoMessage() {}
+
+func (x *MarkInboxAsReadRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_inbox_service_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MarkInboxAsReadRequest.ProtoReflect.Descriptor instead.
+func (*MarkInboxAsReadRequest) Descriptor() ([]byte, []int) {
+	return file_api_v1_inbox_service_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *MarkInboxAsReadRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *MarkInboxAsReadRequest) GetReadAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ReadAt
+	}
+	return nil
+}
+
+type MarkAllInboxesAsReadRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Required. The parent resource whose inboxes will be marked as read.
+	// Format: users/{user}
+	Parent string `protobuf:"bytes,1,opt,name=parent,proto3" json:"parent,omitempty"`
+	// Optional. The timestamp to mark as read at.
+	// If not specified, uses the current time.
+	// Similar to GitHub's "last_read_at" parameter
+	ReadAt        *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=read_at,json=readAt,proto3,oneof" json:"read_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MarkAllInboxesAsReadRequest) Reset() {
+	*x = MarkAllInboxesAsReadRequest{}
+	mi := &file_api_v1_inbox_service_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MarkAllInboxesAsReadRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MarkAllInboxesAsReadRequest) ProtoMessage() {}
+
+func (x *MarkAllInboxesAsReadRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_inbox_service_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MarkAllInboxesAsReadRequest.ProtoReflect.Descriptor instead.
+func (*MarkAllInboxesAsReadRequest) Descriptor() ([]byte, []int) {
+	return file_api_v1_inbox_service_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *MarkAllInboxesAsReadRequest) GetParent() string {
+	if x != nil {
+		return x.Parent
+	}
+	return ""
+}
+
+func (x *MarkAllInboxesAsReadRequest) GetReadAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ReadAt
+	}
+	return nil
+}
+
+// Subject of the notification.
+// Similar to GitHub's notification subject
+type Inbox_Subject struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The title of the subject.
+	// Similar to GitHub's "subject.title"
+	Title string `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
+	// The type of subject.
+	// Examples: "Memo", "Comment", "Version"
+	// Similar to GitHub's "subject.type" (Issue, PullRequest, etc.)
+	Type string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
+	// The URL to the subject.
+	// Similar to GitHub's "subject.url"
+	Url string `protobuf:"bytes,3,opt,name=url,proto3" json:"url,omitempty"`
+	// Optional. The URL to the latest comment.
+	// Similar to GitHub's "subject.latest_comment_url"
+	LatestCommentUrl *string `protobuf:"bytes,4,opt,name=latest_comment_url,json=latestCommentUrl,proto3,oneof" json:"latest_comment_url,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *Inbox_Subject) Reset() {
+	*x = Inbox_Subject{}
+	mi := &file_api_v1_inbox_service_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Inbox_Subject) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Inbox_Subject) ProtoMessage() {}
+
+func (x *Inbox_Subject) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v1_inbox_service_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Inbox_Subject.ProtoReflect.Descriptor instead.
+func (*Inbox_Subject) Descriptor() ([]byte, []int) {
+	return file_api_v1_inbox_service_proto_rawDescGZIP(), []int{0, 0}
+}
+
+func (x *Inbox_Subject) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *Inbox_Subject) GetType() string {
+	if x != nil {
+		return x.Type
+	}
+	return ""
+}
+
+func (x *Inbox_Subject) GetUrl() string {
+	if x != nil {
+		return x.Url
+	}
+	return ""
+}
+
+func (x *Inbox_Subject) GetLatestCommentUrl() string {
+	if x != nil && x.LatestCommentUrl != nil {
+		return *x.LatestCommentUrl
+	}
+	return ""
+}
+
 var File_api_v1_inbox_service_proto protoreflect.FileDescriptor
 
 const file_api_v1_inbox_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1aapi/v1/inbox_service.proto\x12\fmemos.api.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x17google/api/client.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x19google/api/resource.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x87\x04\n" +
-	"\x05Inbox\x12\x17\n" +
-	"\x04name\x18\x01 \x01(\tB\x03\xe0A\bR\x04name\x12\x1b\n" +
-	"\x06sender\x18\x02 \x01(\tB\x03\xe0A\x03R\x06sender\x12\x1f\n" +
-	"\breceiver\x18\x03 \x01(\tB\x03\xe0A\x03R\breceiver\x127\n" +
-	"\x06status\x18\x04 \x01(\x0e2\x1a.memos.api.v1.Inbox.StatusB\x03\xe0A\x01R\x06status\x12@\n" +
+	"\x1aapi/v1/inbox_service.proto\x12\fmemos.api.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x17google/api/client.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x19google/api/resource.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a google/protobuf/field_mask.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xed\x05\n" +
+	"\x05Inbox\x12\x1a\n" +
+	"\x04name\x18\x01 \x01(\tB\x06\xe0A\x03\xe0A\bR\x04name\x121\n" +
+	"\x06sender\x18\x02 \x01(\tB\x19\xe0A\x03\xfaA\x13\n" +
+	"\x11memos.api.v1/UserR\x06sender\x125\n" +
+	"\breceiver\x18\x03 \x01(\tB\x19\xe0A\x03\xfaA\x13\n" +
+	"\x11memos.api.v1/UserR\breceiver\x12\x1b\n" +
+	"\x06unread\x18\x04 \x01(\bB\x03\xe0A\x03R\x06unread\x12@\n" +
 	"\vcreate_time\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\n" +
-	"createTime\x121\n" +
-	"\x04type\x18\x06 \x01(\x0e2\x18.memos.api.v1.Inbox.TypeB\x03\xe0A\x03R\x04type\x12)\n" +
-	"\vactivity_id\x18\a \x01(\x05B\x03\xe0A\x01H\x00R\n" +
-	"activityId\x88\x01\x01\":\n" +
-	"\x06Status\x12\x16\n" +
-	"\x12STATUS_UNSPECIFIED\x10\x00\x12\n" +
-	"\n" +
-	"\x06UNREAD\x10\x01\x12\f\n" +
-	"\bARCHIVED\x10\x02\"B\n" +
-	"\x04Type\x12\x14\n" +
-	"\x10TYPE_UNSPECIFIED\x10\x00\x12\x10\n" +
-	"\fMEMO_COMMENT\x10\x01\x12\x12\n" +
-	"\x0eVERSION_UPDATE\x10\x02:>\xeaA;\n" +
-	"\x12memos.api.v1/Inbox\x12\x0finboxes/{inbox}\x1a\x04name*\ainboxes2\x05inboxB\x0e\n" +
-	"\f_activity_id\"\xca\x01\n" +
+	"createTime\x12@\n" +
+	"\vupdate_time\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\n" +
+	"updateTime\x12F\n" +
+	"\flast_read_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03H\x00R\n" +
+	"lastReadAt\x88\x01\x01\x12\x1b\n" +
+	"\x06reason\x18\b \x01(\tB\x03\xe0A\x03R\x06reason\x12:\n" +
+	"\asubject\x18\t \x01(\v2\x1b.memos.api.v1.Inbox.SubjectB\x03\xe0A\x03R\asubject\x129\n" +
+	"\bactivity\x18\n" +
+	" \x01(\tB\x1d\xe0A\x03\xfaA\x17\n" +
+	"\x15memos.api.v1/ActivityR\bactivity\x1a\x8f\x01\n" +
+	"\aSubject\x12\x14\n" +
+	"\x05title\x18\x01 \x01(\tR\x05title\x12\x12\n" +
+	"\x04type\x18\x02 \x01(\tR\x04type\x12\x10\n" +
+	"\x03url\x18\x03 \x01(\tR\x03url\x121\n" +
+	"\x12latest_comment_url\x18\x04 \x01(\tH\x00R\x10latestCommentUrl\x88\x01\x01B\x15\n" +
+	"\x13_latest_comment_url:>\xeaA;\n" +
+	"\x12memos.api.v1/Inbox\x12\x0finboxes/{inbox}\x1a\x04name*\ainboxes2\x05inboxB\x0f\n" +
+	"\r_last_read_at\"\xdf\x02\n" +
 	"\x12ListInboxesRequest\x121\n" +
 	"\x06parent\x18\x01 \x01(\tB\x19\xe0A\x02\xfaA\x13\n" +
-	"\x11memos.api.v1/UserR\x06parent\x12 \n" +
-	"\tpage_size\x18\x02 \x01(\x05B\x03\xe0A\x01R\bpageSize\x12\"\n" +
+	"\x11memos.api.v1/UserR\x06parent\x12$\n" +
+	"\vunread_only\x18\x02 \x01(\bB\x03\xe0A\x01R\n" +
+	"unreadOnly\x12 \n" +
+	"\tpage_size\x18\x03 \x01(\x05B\x03\xe0A\x01R\bpageSize\x12\"\n" +
 	"\n" +
-	"page_token\x18\x03 \x01(\tB\x03\xe0A\x01R\tpageToken\x12\x1b\n" +
-	"\x06filter\x18\x04 \x01(\tB\x03\xe0A\x01R\x06filter\x12\x1e\n" +
-	"\border_by\x18\x05 \x01(\tB\x03\xe0A\x01R\aorderBy\"\x8b\x01\n" +
+	"page_token\x18\x04 \x01(\tB\x03\xe0A\x01R\tpageToken\x12\x1b\n" +
+	"\x06reason\x18\x05 \x01(\tB\x03\xe0A\x01R\x06reason\x12:\n" +
+	"\x05since\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x01H\x00R\x05since\x88\x01\x01\x12<\n" +
+	"\x06before\x18\a \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x01H\x01R\x06before\x88\x01\x01B\b\n" +
+	"\x06_sinceB\t\n" +
+	"\a_before\"l\n" +
 	"\x13ListInboxesResponse\x12-\n" +
 	"\ainboxes\x18\x01 \x03(\v2\x13.memos.api.v1.InboxR\ainboxes\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\x12\x1d\n" +
-	"\n" +
-	"total_size\x18\x03 \x01(\x05R\ttotalSize\"\xb0\x01\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"A\n" +
+	"\x0fGetInboxRequest\x12.\n" +
+	"\x04name\x18\x01 \x01(\tB\x1a\xe0A\x02\xfaA\x14\n" +
+	"\x12memos.api.v1/InboxR\x04name\"\x86\x01\n" +
 	"\x12UpdateInboxRequest\x12.\n" +
 	"\x05inbox\x18\x01 \x01(\v2\x13.memos.api.v1.InboxB\x03\xe0A\x02R\x05inbox\x12@\n" +
 	"\vupdate_mask\x18\x02 \x01(\v2\x1a.google.protobuf.FieldMaskB\x03\xe0A\x02R\n" +
-	"updateMask\x12(\n" +
-	"\rallow_missing\x18\x03 \x01(\bB\x03\xe0A\x01R\fallowMissing\"D\n" +
+	"updateMask\"D\n" +
 	"\x12DeleteInboxRequest\x12.\n" +
 	"\x04name\x18\x01 \x01(\tB\x1a\xe0A\x02\xfaA\x14\n" +
-	"\x12memos.api.v1/InboxR\x04name2\x92\x03\n" +
+	"\x12memos.api.v1/InboxR\x04name\"\x93\x01\n" +
+	"\x16MarkInboxAsReadRequest\x12.\n" +
+	"\x04name\x18\x01 \x01(\tB\x1a\xe0A\x02\xfaA\x14\n" +
+	"\x12memos.api.v1/InboxR\x04name\x12=\n" +
+	"\aread_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x01H\x00R\x06readAt\x88\x01\x01B\n" +
+	"\n" +
+	"\b_read_at\"\x9b\x01\n" +
+	"\x1bMarkAllInboxesAsReadRequest\x121\n" +
+	"\x06parent\x18\x01 \x01(\tB\x19\xe0A\x02\xfaA\x13\n" +
+	"\x11memos.api.v1/UserR\x06parent\x12=\n" +
+	"\aread_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x01H\x00R\x06readAt\x88\x01\x01B\n" +
+	"\n" +
+	"\b_read_at2\xa4\x06\n" +
 	"\fInboxService\x12\x85\x01\n" +
-	"\vListInboxes\x12 .memos.api.v1.ListInboxesRequest\x1a!.memos.api.v1.ListInboxesResponse\"1\xdaA\x06parent\x82\xd3\xe4\x93\x02\"\x12 /api/v1/{parent=users/*}/inboxes\x12\x87\x01\n" +
+	"\vListInboxes\x12 .memos.api.v1.ListInboxesRequest\x1a!.memos.api.v1.ListInboxesResponse\"1\xdaA\x06parent\x82\xd3\xe4\x93\x02\"\x12 /api/v1/{parent=users/*}/inboxes\x12g\n" +
+	"\bGetInbox\x12\x1d.memos.api.v1.GetInboxRequest\x1a\x13.memos.api.v1.Inbox\"'\xdaA\x04name\x82\xd3\xe4\x93\x02\x1a\x12\x18/api/v1/{name=inboxes/*}\x12\x87\x01\n" +
 	"\vUpdateInbox\x12 .memos.api.v1.UpdateInboxRequest\x1a\x13.memos.api.v1.Inbox\"A\xdaA\x11inbox,update_mask\x82\xd3\xe4\x93\x02':\x05inbox2\x1e/api/v1/{inbox.name=inboxes/*}\x12p\n" +
-	"\vDeleteInbox\x12 .memos.api.v1.DeleteInboxRequest\x1a\x16.google.protobuf.Empty\"'\xdaA\x04name\x82\xd3\xe4\x93\x02\x1a*\x18/api/v1/{name=inboxes/*}B\xa9\x01\n" +
+	"\vDeleteInbox\x12 .memos.api.v1.DeleteInboxRequest\x1a\x16.google.protobuf.Empty\"'\xdaA\x04name\x82\xd3\xe4\x93\x02\x1a*\x18/api/v1/{name=inboxes/*}\x12\x86\x01\n" +
+	"\x0fMarkInboxAsRead\x12$.memos.api.v1.MarkInboxAsReadRequest\x1a\x16.google.protobuf.Empty\"5\xdaA\x04name\x82\xd3\xe4\x93\x02(:\x01*\"#/api/v1/{name=inboxes/*}:markAsRead\x12\x9d\x01\n" +
+	"\x14MarkAllInboxesAsRead\x12).memos.api.v1.MarkAllInboxesAsReadRequest\x1a\x16.google.protobuf.Empty\"B\xdaA\x06parent\x82\xd3\xe4\x93\x023:\x01*\"./api/v1/{parent=users/*}/inboxes:markAllAsReadB\xa9\x01\n" +
 	"\x10com.memos.api.v1B\x11InboxServiceProtoP\x01Z0github.com/usememos/memos/proto/gen/api/v1;apiv1\xa2\x02\x03MAX\xaa\x02\fMemos.Api.V1\xca\x02\fMemos\\Api\\V1\xe2\x02\x18Memos\\Api\\V1\\GPBMetadata\xea\x02\x0eMemos::Api::V1b\x06proto3"
 
 var (
@@ -561,38 +755,50 @@ func file_api_v1_inbox_service_proto_rawDescGZIP() []byte {
 	return file_api_v1_inbox_service_proto_rawDescData
 }
 
-var file_api_v1_inbox_service_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_api_v1_inbox_service_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_api_v1_inbox_service_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_api_v1_inbox_service_proto_goTypes = []any{
-	(Inbox_Status)(0),             // 0: memos.api.v1.Inbox.Status
-	(Inbox_Type)(0),               // 1: memos.api.v1.Inbox.Type
-	(*Inbox)(nil),                 // 2: memos.api.v1.Inbox
-	(*ListInboxesRequest)(nil),    // 3: memos.api.v1.ListInboxesRequest
-	(*ListInboxesResponse)(nil),   // 4: memos.api.v1.ListInboxesResponse
-	(*UpdateInboxRequest)(nil),    // 5: memos.api.v1.UpdateInboxRequest
-	(*DeleteInboxRequest)(nil),    // 6: memos.api.v1.DeleteInboxRequest
-	(*timestamppb.Timestamp)(nil), // 7: google.protobuf.Timestamp
-	(*fieldmaskpb.FieldMask)(nil), // 8: google.protobuf.FieldMask
-	(*emptypb.Empty)(nil),         // 9: google.protobuf.Empty
+	(*Inbox)(nil),                       // 0: memos.api.v1.Inbox
+	(*ListInboxesRequest)(nil),          // 1: memos.api.v1.ListInboxesRequest
+	(*ListInboxesResponse)(nil),         // 2: memos.api.v1.ListInboxesResponse
+	(*GetInboxRequest)(nil),             // 3: memos.api.v1.GetInboxRequest
+	(*UpdateInboxRequest)(nil),          // 4: memos.api.v1.UpdateInboxRequest
+	(*DeleteInboxRequest)(nil),          // 5: memos.api.v1.DeleteInboxRequest
+	(*MarkInboxAsReadRequest)(nil),      // 6: memos.api.v1.MarkInboxAsReadRequest
+	(*MarkAllInboxesAsReadRequest)(nil), // 7: memos.api.v1.MarkAllInboxesAsReadRequest
+	(*Inbox_Subject)(nil),               // 8: memos.api.v1.Inbox.Subject
+	(*timestamppb.Timestamp)(nil),       // 9: google.protobuf.Timestamp
+	(*fieldmaskpb.FieldMask)(nil),       // 10: google.protobuf.FieldMask
+	(*emptypb.Empty)(nil),               // 11: google.protobuf.Empty
 }
 var file_api_v1_inbox_service_proto_depIdxs = []int32{
-	0, // 0: memos.api.v1.Inbox.status:type_name -> memos.api.v1.Inbox.Status
-	7, // 1: memos.api.v1.Inbox.create_time:type_name -> google.protobuf.Timestamp
-	1, // 2: memos.api.v1.Inbox.type:type_name -> memos.api.v1.Inbox.Type
-	2, // 3: memos.api.v1.ListInboxesResponse.inboxes:type_name -> memos.api.v1.Inbox
-	2, // 4: memos.api.v1.UpdateInboxRequest.inbox:type_name -> memos.api.v1.Inbox
-	8, // 5: memos.api.v1.UpdateInboxRequest.update_mask:type_name -> google.protobuf.FieldMask
-	3, // 6: memos.api.v1.InboxService.ListInboxes:input_type -> memos.api.v1.ListInboxesRequest
-	5, // 7: memos.api.v1.InboxService.UpdateInbox:input_type -> memos.api.v1.UpdateInboxRequest
-	6, // 8: memos.api.v1.InboxService.DeleteInbox:input_type -> memos.api.v1.DeleteInboxRequest
-	4, // 9: memos.api.v1.InboxService.ListInboxes:output_type -> memos.api.v1.ListInboxesResponse
-	2, // 10: memos.api.v1.InboxService.UpdateInbox:output_type -> memos.api.v1.Inbox
-	9, // 11: memos.api.v1.InboxService.DeleteInbox:output_type -> google.protobuf.Empty
-	9, // [9:12] is the sub-list for method output_type
-	6, // [6:9] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	6, // [6:6] is the sub-list for extension extendee
-	0, // [0:6] is the sub-list for field type_name
+	9,  // 0: memos.api.v1.Inbox.create_time:type_name -> google.protobuf.Timestamp
+	9,  // 1: memos.api.v1.Inbox.update_time:type_name -> google.protobuf.Timestamp
+	9,  // 2: memos.api.v1.Inbox.last_read_at:type_name -> google.protobuf.Timestamp
+	8,  // 3: memos.api.v1.Inbox.subject:type_name -> memos.api.v1.Inbox.Subject
+	9,  // 4: memos.api.v1.ListInboxesRequest.since:type_name -> google.protobuf.Timestamp
+	9,  // 5: memos.api.v1.ListInboxesRequest.before:type_name -> google.protobuf.Timestamp
+	0,  // 6: memos.api.v1.ListInboxesResponse.inboxes:type_name -> memos.api.v1.Inbox
+	0,  // 7: memos.api.v1.UpdateInboxRequest.inbox:type_name -> memos.api.v1.Inbox
+	10, // 8: memos.api.v1.UpdateInboxRequest.update_mask:type_name -> google.protobuf.FieldMask
+	9,  // 9: memos.api.v1.MarkInboxAsReadRequest.read_at:type_name -> google.protobuf.Timestamp
+	9,  // 10: memos.api.v1.MarkAllInboxesAsReadRequest.read_at:type_name -> google.protobuf.Timestamp
+	1,  // 11: memos.api.v1.InboxService.ListInboxes:input_type -> memos.api.v1.ListInboxesRequest
+	3,  // 12: memos.api.v1.InboxService.GetInbox:input_type -> memos.api.v1.GetInboxRequest
+	4,  // 13: memos.api.v1.InboxService.UpdateInbox:input_type -> memos.api.v1.UpdateInboxRequest
+	5,  // 14: memos.api.v1.InboxService.DeleteInbox:input_type -> memos.api.v1.DeleteInboxRequest
+	6,  // 15: memos.api.v1.InboxService.MarkInboxAsRead:input_type -> memos.api.v1.MarkInboxAsReadRequest
+	7,  // 16: memos.api.v1.InboxService.MarkAllInboxesAsRead:input_type -> memos.api.v1.MarkAllInboxesAsReadRequest
+	2,  // 17: memos.api.v1.InboxService.ListInboxes:output_type -> memos.api.v1.ListInboxesResponse
+	0,  // 18: memos.api.v1.InboxService.GetInbox:output_type -> memos.api.v1.Inbox
+	0,  // 19: memos.api.v1.InboxService.UpdateInbox:output_type -> memos.api.v1.Inbox
+	11, // 20: memos.api.v1.InboxService.DeleteInbox:output_type -> google.protobuf.Empty
+	11, // 21: memos.api.v1.InboxService.MarkInboxAsRead:output_type -> google.protobuf.Empty
+	11, // 22: memos.api.v1.InboxService.MarkAllInboxesAsRead:output_type -> google.protobuf.Empty
+	17, // [17:23] is the sub-list for method output_type
+	11, // [11:17] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_api_v1_inbox_service_proto_init() }
@@ -601,19 +807,22 @@ func file_api_v1_inbox_service_proto_init() {
 		return
 	}
 	file_api_v1_inbox_service_proto_msgTypes[0].OneofWrappers = []any{}
+	file_api_v1_inbox_service_proto_msgTypes[1].OneofWrappers = []any{}
+	file_api_v1_inbox_service_proto_msgTypes[6].OneofWrappers = []any{}
+	file_api_v1_inbox_service_proto_msgTypes[7].OneofWrappers = []any{}
+	file_api_v1_inbox_service_proto_msgTypes[8].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_v1_inbox_service_proto_rawDesc), len(file_api_v1_inbox_service_proto_rawDesc)),
-			NumEnums:      2,
-			NumMessages:   5,
+			NumEnums:      0,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_api_v1_inbox_service_proto_goTypes,
 		DependencyIndexes: file_api_v1_inbox_service_proto_depIdxs,
-		EnumInfos:         file_api_v1_inbox_service_proto_enumTypes,
 		MessageInfos:      file_api_v1_inbox_service_proto_msgTypes,
 	}.Build()
 	File_api_v1_inbox_service_proto = out.File

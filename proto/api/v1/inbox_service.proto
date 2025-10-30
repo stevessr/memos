@@ -13,12 +13,20 @@ import "google/protobuf/timestamp.proto";
 option go_package = "gen/api/v1";
 
 service InboxService {
-  // ListInboxes lists inboxes for a user.
+  // ListInboxes lists inbox notifications for a user.
+  // Similar to GitHub's "List notifications for the authenticated user"
   rpc ListInboxes(ListInboxesRequest) returns (ListInboxesResponse) {
     option (google.api.http) = {get: "/api/v1/{parent=users/*}/inboxes"};
     option (google.api.method_signature) = "parent";
   }
-  // UpdateInbox updates an inbox.
+  // GetInbox gets a single inbox notification.
+  // Similar to GitHub's "Get a thread"
+  rpc GetInbox(GetInboxRequest) returns (Inbox) {
+    option (google.api.http) = {get: "/api/v1/{name=inboxes/*}"};
+    option (google.api.method_signature) = "name";
+  }
+  // UpdateInbox updates an inbox notification (typically for marking as read/done).
+  // Similar to GitHub's "Mark a thread as read" or "Mark a thread as done"
   rpc UpdateInbox(UpdateInboxRequest) returns (Inbox) {
     option (google.api.http) = {
       patch: "/api/v1/{inbox.name=inboxes/*}"
@@ -26,10 +34,29 @@ service InboxService {
     };
     option (google.api.method_signature) = "inbox,update_mask";
   }
-  // DeleteInbox deletes an inbox.
+  // DeleteInbox deletes an inbox notification.
+  // Similar to GitHub's "Delete a thread subscription"
   rpc DeleteInbox(DeleteInboxRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {delete: "/api/v1/{name=inboxes/*}"};
     option (google.api.method_signature) = "name";
+  }
+  // MarkInboxAsRead marks an inbox notification as read.
+  // Similar to GitHub's "Mark a thread as read"
+  rpc MarkInboxAsRead(MarkInboxAsReadRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/v1/{name=inboxes/*}:markAsRead"
+      body: "*"
+    };
+    option (google.api.method_signature) = "name";
+  }
+  // MarkAllInboxesAsRead marks all inbox notifications as read.
+  // Similar to GitHub's "Mark notifications as read"
+  rpc MarkAllInboxesAsRead(MarkAllInboxesAsReadRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/api/v1/{parent=users/*}/inboxes:markAllAsRead"
+      body: "*"
+    };
+    option (google.api.method_signature) = "parent";
   }
 }
 
@@ -42,48 +69,78 @@ message Inbox {
     plural: "inboxes"
   };
 
-  // The resource name of the inbox.
+  // The resource name of the inbox notification.
   // Format: inboxes/{inbox}
-  string name = 1 [(google.api.field_behavior) = IDENTIFIER];
+  string name = 1 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (google.api.field_behavior) = IDENTIFIER
+  ];
 
   // The sender of the inbox notification.
   // Format: users/{user}
-  string sender = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Similar to GitHub's notification actor
+  string sender = 2 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (google.api.resource_reference) = {type: "memos.api.v1/User"}
+  ];
 
   // The receiver of the inbox notification.
   // Format: users/{user}
-  string receiver = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+  string receiver = 3 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (google.api.resource_reference) = {type: "memos.api.v1/User"}
+  ];
 
-  // The status of the inbox notification.
-  Status status = 4 [(google.api.field_behavior) = OPTIONAL];
+  // Whether the notification is unread.
+  // Similar to GitHub's "unread" field
+  bool unread = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
 
   // Output only. The creation timestamp.
   google.protobuf.Timestamp create_time = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
 
-  // The type of the inbox notification.
-  Type type = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // Output only. The last update timestamp.
+  // Similar to GitHub's "updated_at"
+  google.protobuf.Timestamp update_time = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
 
-  // Optional. The activity ID associated with this inbox notification.
-  optional int32 activity_id = 7 [(google.api.field_behavior) = OPTIONAL];
+  // Optional. When the notification was last read.
+  // Similar to GitHub's "last_read_at"
+  optional google.protobuf.Timestamp last_read_at = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
 
-  // Status enumeration for inbox notifications.
-  enum Status {
-    // Unspecified status.
-    STATUS_UNSPECIFIED = 0;
-    // The notification is unread.
-    UNREAD = 1;
-    // The notification is archived.
-    ARCHIVED = 2;
-  }
+  // The reason for receiving this notification.
+  // Similar to GitHub's "reason" field
+  // Examples: "comment", "mention", "version_update", "assign", "review_requested"
+  string reason = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
 
-  // Type enumeration for inbox notifications.
-  enum Type {
-    // Unspecified type.
-    TYPE_UNSPECIFIED = 0;
-    // Memo comment notification.
-    MEMO_COMMENT = 1;
-    // Version update notification.
-    VERSION_UPDATE = 2;
+  // The subject of the notification.
+  // Similar to GitHub's "subject" object
+  Subject subject = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // The activity associated with this inbox notification.
+  // Format: activities/{activity}
+  string activity = 10 [
+    (google.api.field_behavior) = OUTPUT_ONLY,
+    (google.api.resource_reference) = {type: "memos.api.v1/Activity"}
+  ];
+
+  // Subject of the notification.
+  // Similar to GitHub's notification subject
+  message Subject {
+    // The title of the subject.
+    // Similar to GitHub's "subject.title"
+    string title = 1;
+
+    // The type of subject.
+    // Examples: "Memo", "Comment", "Version"
+    // Similar to GitHub's "subject.type" (Issue, PullRequest, etc.)
+    string type = 2;
+
+    // The URL to the subject.
+    // Similar to GitHub's "subject.url"
+    string url = 3;
+
+    // Optional. The URL to the latest comment.
+    // Similar to GitHub's "subject.latest_comment_url"
+    optional string latest_comment_url = 4;
   }
 }
 
@@ -95,55 +152,93 @@ message ListInboxesRequest {
     (google.api.resource_reference) = {type: "memos.api.v1/User"}
   ];
 
+  // Optional. If true, show only unread notifications.
+  // Similar to GitHub's "all" parameter (default is unread only)
+  bool unread_only = 2 [(google.api.field_behavior) = OPTIONAL];
+
   // Optional. The maximum number of inboxes to return.
   // The service may return fewer than this value.
   // If unspecified, at most 50 inboxes will be returned.
-  // The maximum value is 1000; values above 1000 will be coerced to 1000.
-  int32 page_size = 2 [(google.api.field_behavior) = OPTIONAL];
+  // The maximum value is 100; values above 100 will be coerced to 100.
+  int32 page_size = 3 [(google.api.field_behavior) = OPTIONAL];
 
   // Optional. A page token, received from a previous `ListInboxes` call.
   // Provide this to retrieve the subsequent page.
-  string page_token = 3 [(google.api.field_behavior) = OPTIONAL];
+  string page_token = 4 [(google.api.field_behavior) = OPTIONAL];
 
-  // Optional. Filter to apply to the list results.
-  // Example: "status=UNREAD" or "type=MEMO_COMMENT"
-  // Supported operators: =, !=
-  // Supported fields: status, type, sender, create_time
-  string filter = 4 [(google.api.field_behavior) = OPTIONAL];
+  // Optional. Filter notifications by reason.
+  // Similar to GitHub's filtering by reason
+  // Examples: "comment", "mention", "version_update"
+  string reason = 5 [(google.api.field_behavior) = OPTIONAL];
 
-  // Optional. The order to sort results by.
-  // Example: "create_time desc" or "status asc"
-  string order_by = 5 [(google.api.field_behavior) = OPTIONAL];
+  // Optional. Only show notifications updated after the given time.
+  // Similar to GitHub's "since" parameter
+  optional google.protobuf.Timestamp since = 6 [(google.api.field_behavior) = OPTIONAL];
+
+  // Optional. Only show notifications updated before the given time.
+  // Similar to GitHub's "before" parameter
+  optional google.protobuf.Timestamp before = 7 [(google.api.field_behavior) = OPTIONAL];
 }
 
 message ListInboxesResponse {
-  // The list of inboxes.
+  // The list of inbox notifications.
   repeated Inbox inboxes = 1;
 
   // A token that can be sent as `page_token` to retrieve the next page.
   // If this field is omitted, there are no subsequent pages.
   string next_page_token = 2;
-
-  // The total count of inboxes (may be approximate).
-  int32 total_size = 3;
 }
 
-message UpdateInboxRequest {
-  // Required. The inbox to update.
-  Inbox inbox = 1 [(google.api.field_behavior) = REQUIRED];
-
-  // Required. The list of fields to update.
-  google.protobuf.FieldMask update_mask = 2 [(google.api.field_behavior) = REQUIRED];
-
-  // Optional. If set to true, allows updating missing fields.
-  bool allow_missing = 3 [(google.api.field_behavior) = OPTIONAL];
-}
-
-message DeleteInboxRequest {
-  // Required. The resource name of the inbox to delete.
+message GetInboxRequest {
+  // Required. The resource name of the inbox notification.
   // Format: inboxes/{inbox}
   string name = 1 [
     (google.api.field_behavior) = REQUIRED,
     (google.api.resource_reference) = {type: "memos.api.v1/Inbox"}
   ];
+}
+
+message UpdateInboxRequest {
+  // Required. The inbox notification to update.
+  Inbox inbox = 1 [(google.api.field_behavior) = REQUIRED];
+
+  // Required. The list of fields to update.
+  // Supported fields: unread, last_read_at
+  google.protobuf.FieldMask update_mask = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeleteInboxRequest {
+  // Required. The resource name of the inbox notification to delete.
+  // Format: inboxes/{inbox}
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "memos.api.v1/Inbox"}
+  ];
+}
+
+message MarkInboxAsReadRequest {
+  // Required. The resource name of the inbox notification.
+  // Format: inboxes/{inbox}
+  string name = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "memos.api.v1/Inbox"}
+  ];
+
+  // Optional. The timestamp to mark as read at.
+  // If not specified, uses the current time.
+  optional google.protobuf.Timestamp read_at = 2 [(google.api.field_behavior) = OPTIONAL];
+}
+
+message MarkAllInboxesAsReadRequest {
+  // Required. The parent resource whose inboxes will be marked as read.
+  // Format: users/{user}
+  string parent = 1 [
+    (google.api.field_behavior) = REQUIRED,
+    (google.api.resource_reference) = {type: "memos.api.v1/User"}
+  ];
+
+  // Optional. The timestamp to mark as read at.
+  // If not specified, uses the current time.
+  // Similar to GitHub's "last_read_at" parameter
+  optional google.protobuf.Timestamp read_at = 2 [(google.api.field_behavior) = OPTIONAL];
 }
